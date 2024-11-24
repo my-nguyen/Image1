@@ -3,6 +3,7 @@ package com.nguyen.image1
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.StrictMode
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -25,8 +26,13 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
         Log.d(TAG, "Loading image from URL into ImageView")
-        // this will cause NetworkOnMainThreadException
+        // downloadBitmap() needs to be moved off the main thread. however we can call
+        // StrictMode.setThreadPolicy() to allow this on main thread, which is not recommended in
+        // production. also the UI won't be responsive.
+        val policy = StrictMode.ThreadPolicy.Builder().permitNetwork().build()
+        StrictMode.setThreadPolicy(policy)
         val bitmap = downloadBitmap(URL)
         binding.image.setImageBitmap(bitmap)
     }
