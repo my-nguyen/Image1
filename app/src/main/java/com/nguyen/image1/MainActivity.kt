@@ -12,6 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.nguyen.image1.databinding.ActivityMainBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URL
 import kotlin.concurrent.thread
 
@@ -31,14 +35,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         Log.d(TAG, "Loading image from URL into ImageView")
-        // Handler associated with the main thread, to receive the bitmap from the background thread
-        val handler = Handler(Looper.getMainLooper())
-        // start a background thread
-        thread(true) {
+        // use Coroutines to send bitmap from background thread to main thread
+        CoroutineScope(Dispatchers.IO).launch {
             Log.d(TAG, "Current thread ${Thread.currentThread().name}")
             val bitmap = downloadBitmap(URL)
-            handler.post {
-                Log.d(TAG, "Current thread in the UI handler: ${Thread.currentThread().name}")
+            withContext(Dispatchers.Main) {
+                Log.d(TAG, "Current thread in the main dispatcher: ${Thread.currentThread().name}")
                 binding.image.setImageBitmap(bitmap)
             }
         }
