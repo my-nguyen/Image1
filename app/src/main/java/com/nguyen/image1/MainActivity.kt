@@ -1,13 +1,15 @@
 package com.nguyen.image1
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.bumptech.glide.Glide
 import com.nguyen.image1.databinding.ActivityMainBinding
+import java.net.URL
 
 private const val TAG = "MainActivity"
 private const val URL = "https://rkpandey.com/images/rkpDavidson.jpg"
@@ -24,6 +26,22 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         Log.d(TAG, "Loading image from URL into ImageView")
-        Glide.with(this).load(URL).into(binding.image)
+        // this will cause NetworkOnMainThreadException
+        val bitmap = downloadBitmap(URL)
+        binding.image.setImageBitmap(bitmap)
+    }
+
+    private fun downloadBitmap(url: String): Bitmap? {
+        return try {
+            val connection = URL(url).openConnection()
+            connection.connect()
+            val stream = connection.getInputStream()
+            val bitmap = BitmapFactory.decodeStream(stream)
+            stream.close()
+            bitmap
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception $e")
+            null
+        }
     }
 }
